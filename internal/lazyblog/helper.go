@@ -22,12 +22,13 @@ THE SOFTWARE.
 package lazyblog
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/vinoMamba.com/lazyblog/internal/pkg/log"
 )
 
 const (
@@ -35,7 +36,6 @@ const (
 	defConfigFile = "lazyblog.yaml"
 )
 
-// initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
@@ -51,10 +51,21 @@ func initConfig() {
 	viper.AutomaticEnv() // read in environment variables that match
 	viper.SetEnvPrefix("LAZYBLOG")
 
-	// If a config file is found, read it in.
-	if err := viper.ReadInConfig(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-	}
+	replacer := strings.NewReplacer(".", "_")
+	viper.SetEnvKeyReplacer(replacer)
 
-	fmt.Fprintln(os.Stdout, "Using config file:", viper.ConfigFileUsed())
+	if err := viper.ReadInConfig(); err != nil {
+		log.Errorw("Failed to read config file", "error", err)
+	}
+	log.Infow("Using config file:", "file", viper.ConfigFileUsed())
+}
+
+func logOptions() *log.Options {
+	return &log.Options{
+		DisableCaller:     viper.GetBool("log.disableCaller"),
+		DisableStacktrace: viper.GetBool("log.disableStacktrace"),
+		Level:             viper.GetString("log.level"),
+		Format:            viper.GetString("log.format"),
+		OutputPaths:       viper.GetStringSlice("log.outputPaths"),
+	}
 }

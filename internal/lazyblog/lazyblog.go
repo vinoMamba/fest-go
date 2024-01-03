@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/vinoMamba.com/lazyblog/internal/pkg/log"
 )
 
 var cfgFile string
@@ -14,11 +15,12 @@ func NewLazyBlogCommand() *cobra.Command {
 		Short:        "lazyblog App",
 		Long:         "lazyblog is a static site generator written in Go",
 		SilenceUsage: true,
-		// 指定调用 cmd.Execute() 时，执行的 Run 函数，函数执行失败会返回错误信息
 		RunE: func(cmd *cobra.Command, args []string) error {
+			log.Init(logOptions())
+			defer log.Sync()
+
 			return run()
 		},
-		// 这里设置命令运行时，不需要指定命令行参数
 		Args: func(cmd *cobra.Command, args []string) error {
 			for _, arg := range args {
 				if len(arg) > 0 {
@@ -37,6 +39,5 @@ func NewLazyBlogCommand() *cobra.Command {
 
 // run 函数是实际的业务代码入口函数.
 func run() error {
-	fmt.Println("Hello MiniBlog!")
 	return nil
 }
